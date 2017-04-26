@@ -5,8 +5,10 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 /**
@@ -15,6 +17,8 @@ import android.view.View;
 
 public class LuckDraw extends View {
     private Bitmap mDrawable;
+    private int mheight=0;
+    private int mwidth=0;
     public LuckDraw(Context context) {
         super(context);
     }
@@ -43,6 +47,46 @@ public class LuckDraw extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawBitmap(mDrawable,0,0,null);
+        canvas.drawBitmap(getBitmap(mDrawable,mwidth,mheight),0,0,null);
+        canvas.save();
+        canvas.rotate(30);
+        canvas.restore();
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        mheight=h;
+        mwidth=w;
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int wMode = MeasureSpec.getMode(widthMeasureSpec);
+        int hMode = MeasureSpec.getMode(heightMeasureSpec);
+        int ws = MeasureSpec.getSize(widthMeasureSpec);
+        int hs = MeasureSpec.getSize(heightMeasureSpec);
+        int width=0;
+        int height=0;
+        if(wMode==MeasureSpec.EXACTLY){
+            mwidth=ws;
+            width=ws;
+        }else{
+            width = mDrawable.getWidth();
+        }
+        if(hMode==MeasureSpec.EXACTLY){
+            mheight=hs;
+            height=hs;
+        }else{
+            height=mDrawable.getHeight();
+        }
+        setMeasuredDimension(width,height);
+    }
+    private Bitmap getBitmap(Bitmap mp,int weight,int height){
+        Matrix matrix = new Matrix();
+        float scale = (float) weight/mp.getWidth();
+        float scale2 = (float) height/mp.getHeight() ;
+        matrix.postScale(scale, scale2);
+        return Bitmap.createBitmap(mp, 0, 0, mp.getWidth(), mp.getHeight(), matrix, true);
     }
 }
