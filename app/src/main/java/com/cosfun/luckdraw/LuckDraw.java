@@ -9,16 +9,21 @@ import android.graphics.Matrix;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 
 /**
  * Created by Administrator on 2017/4/26.
  */
 
-public class LuckDraw extends View {
+public class LuckDraw extends View  {
     private Bitmap mDrawable;
     private int mheight=0;
     private int mwidth=0;
+    int radius=0;
+    int wPoint=0;
+    int hPoint=0;
+    double speed=0;
     public LuckDraw(Context context) {
         super(context);
     }
@@ -43,13 +48,15 @@ public class LuckDraw extends View {
                     break;
             }
         }
+
     }
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawBitmap(getBitmap(mDrawable,mwidth,mheight),0,0,null);
         canvas.save();
-        canvas.rotate(30);
+        canvas.translate(wPoint,hPoint);
+        canvas.rotate(radius);
+        canvas.drawBitmap(getBitmap(mDrawable,mwidth,mheight),-wPoint,-hPoint,null);
         canvas.restore();
     }
 
@@ -57,7 +64,9 @@ public class LuckDraw extends View {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         mheight=h;
+        wPoint=w/2;
         mwidth=w;
+        hPoint=h/2;
     }
 
     @Override
@@ -88,5 +97,50 @@ public class LuckDraw extends View {
         float scale2 = (float) height/mp.getHeight() ;
         matrix.postScale(scale, scale2);
         return Bitmap.createBitmap(mp, 0, 0, mp.getWidth(), mp.getHeight(), matrix, true);
+    }
+
+
+
+
+    public void start(){
+        speed=40;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(true){
+                    radius+=speed;
+                    try {
+                        Thread.sleep(30);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    radius=radius%360;
+                    Log.i("test", radius+"");
+                    postInvalidate();
+                }
+            }
+        }).start();
+    }
+    public void stop(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(speed>0){
+                    if(speed>20) {
+                        speed -= 2;
+                    }
+                    else {
+                        speed -= speed * 0.1;
+                    }
+                    if(speed<0)
+                        speed=0;
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
     }
 }
